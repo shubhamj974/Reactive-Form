@@ -1,0 +1,38 @@
+.example-form {
+  min-width: 250px;
+  max-width: 820px;
+  width: 100%;
+}
+
+.example-full-width {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.mat-radio-button ~ .mat-radio-button {
+  margin-left: 16px;
+}
+
+::ng-deep .mat-form-field-label {
+  font-weight: 500 !important;
+}
+
+::ng-deep .mat-radio-group {
+  ::ng-deep .mat-radio-container {
+    ::ng-deep .mat-radio-outer-circle {
+      height: 15px !important;
+      width: 15px !important;
+    }
+
+    ::ng-deep .mat-radio-inner-circle {
+      height: 15px !important;
+      width: 15px !important;
+      background-color: black !important;
+    }
+  }
+}
+
+::ng-deep .mat-radio-group {
+  margin-bottom: 0.75rem;
+  display: block;
+}
