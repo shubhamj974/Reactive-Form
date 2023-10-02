@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { SpaceBarValidation } from '../../validation/spaceBar.validation';
 import { COUNTRIES_META_DATA } from '../../const/country';
 import { CustomRegex } from '../../const/validation';
 import { EmployeeValidId } from '../../validation/empId';
-import { Iaddress } from '../../models/address';
 
 @Component({
   selector: 'app-sign-up',
@@ -15,11 +14,12 @@ export class SignUpComponent implements OnInit {
   public signUp!: FormGroup;
   public genderInfo: string[] = ['Male', 'Female', 'Other'];
   public countryArr: Array<any> = COUNTRIES_META_DATA;
-  public currentData!: Iaddress;
+  public isChecked!: boolean;
   constructor() {}
 
   ngOnInit(): void {
     this.signUpForm();
+    this.isPerAddressSameCurr();
   }
 
   signUpForm() {
@@ -47,7 +47,6 @@ export class SignUpComponent implements OnInit {
         state: new FormControl(null),
         city: new FormControl(null),
         zipCode: new FormControl(null),
-        sameaddressCheck: new FormControl(false),
       }),
       currentAddress: new FormGroup({
         address2: new FormControl(null),
@@ -56,6 +55,8 @@ export class SignUpComponent implements OnInit {
         city2: new FormControl(null),
         zipCode2: new FormControl(null),
       }),
+      sameaddressCheck: new FormControl(false),
+      skills: new FormArray([new FormControl(null, [Validators.required])]),
     });
   }
 
@@ -64,37 +65,73 @@ export class SignUpComponent implements OnInit {
   }
 
   onSignUp() {
-    let data = this.signUp.value;
-    this.signUp.reset();
+    if (this.signUp.valid) {
+      console.log(this.signUp.value);
+      this.enabled();
+      this.signUp.reset();
+    }
+  }
+
+  isPerAddressSameCurr() {
+    this.signUp
+      .get('sameaddressCheck')
+      ?.valueChanges.subscribe((res: boolean) => (this.isChecked = res));
+  }
+
+  isCurrrentVal() {
+    let perAddress = this.signUp.get('permanentaddress')?.value;
+    return {
+      currentAddress: {
+        address2: perAddress.address1,
+        country2: perAddress.country,
+        state2: perAddress.state,
+        city2: perAddress.city,
+        zipCode2: perAddress.zipCode,
+      },
+    };
+  }
+
+  noCurrentVal() {
+    return {
+      currentAddress: {
+        address2: '',
+        country2: '',
+        state2: '',
+        city2: '',
+        zipCode2: '',
+      },
+    };
+  }
+
+  disabled() {
+    this.signUp.get('currentAddress')?.disable();
+  }
+  enabled() {
+    this.signUp.get('currentAddress')?.enable();
   }
 
   onCheck() {
-    this.currentData = this.signUp.value.permanentaddress;
-    const keyToRemove = 'sameaddressCheck';
-    const { [keyToRemove]: removedKey, ...newObject } = this.currentData;
-
-    let obj = {
-      currentAddress: {
-        address2: newObject.address1,
-        country2: newObject.country,
-        state2: newObject.state,
-        city2: newObject.city,
-        zipCode2: newObject.zipCode,
-      },
-    };
-
-    if (this.currentData.sameaddressCheck) {
-      this.signUp.patchValue(obj);
+    if (this.isChecked) {
+      this.signUp.patchValue(this.isCurrrentVal());
+      this.disabled();
     } else {
-      this.signUp.patchValue({
-        currentAddress: {
-          address2: '',
-          country2: '',
-          state2: '',
-          city2: '',
-          zipCode2: '',
-        },
-      });
+      this.signUp.patchValue(this.noCurrentVal());
+      this.enabled();
     }
+  }
+
+  get isSkillsArray() {
+    return this.signUp.get('skills') as FormArray;
+  }
+
+  onAddSkills() {
+    let skillsControls = new FormControl(null, [Validators.required]);
+    if (this.isSkillsArray.length < 5) {
+      this.isSkillsArray.push(skillsControls);
+    }
+  }
+
+  onRemoveSkills(index: number) {
+    this.isSkillsArray.removeAt(index);
   }
 }
